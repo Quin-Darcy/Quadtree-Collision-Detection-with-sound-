@@ -57,6 +57,7 @@ class QTree {
             }
         }
         this.p_points = [];
+        this.p_points.length = 0;
     }
     insert(point) {
         if (this.contains(point)) {
@@ -65,6 +66,7 @@ class QTree {
             } else {
                 if (!this.divided && this.depth < MAX_DEPTH) {
                     this.subdivide();
+                    this.points = [];
                     this.q1.propogate();
                     this.q2.propogate();
                     this.q3.propogate();
@@ -89,15 +91,11 @@ class QTree {
                         let d = dist(a.x, a.y, b.x, b.y);
                         if (d < a.r) {
                             this.points[i].contact = true;
-                            this.points[j].contact = true;
-                            this.points[i].sound();
-                            this.points[j].sound();
                             this.points[i].coll(this.points[j]);
+                            this.points[i].sound();
+                            
                         } else {
-                            this.points[i].no_sound();
-                            this.points[j].no_sound();
                             this.points[i].contact = false;
-                            this.points[j].contact = false;
                         }
                     }
                 }
@@ -110,27 +108,29 @@ class QTree {
         }
     }
     show() {
-        colorMode(HSB, MAX_DEPTH, 1, 1);
-        rectMode(CORNER);
-        noFill();
+        if (TREE === 1) {
+            colorMode(HSB, MAX_DEPTH, 1, 1);
+            rectMode(CORNER);
+            noFill();
 
-        let s_weight = 2 / (this.depth+1);
-        if (this.depth < MAX_DEPTH) {
-            stroke(this.depth, 1, 1);
-        } else if (this.depth === MAX_DEPTH) {
-            stroke(5*this.depth/6, 1, 1);
-        } else {
-            stroke(MAX_DEPTH-this.depth, 1, 1);
-        }
+            let s_weight = 2 / (this.depth+1);
+            if (this.depth < MAX_DEPTH) {
+                stroke(this.depth, 1, 1);
+            } else if (this.depth === MAX_DEPTH) {
+                stroke(5*this.depth/6, 1, 1);
+            } else {
+                stroke(MAX_DEPTH-this.depth, 1, 1);
+            }
 
-        strokeWeight(s_weight);
-        rect(this.x, this.y, this.w-s_weight, this.h-s_weight);
+            strokeWeight(s_weight);
+            rect(this.x, this.y, this.w-s_weight, this.h-s_weight);
 
-        if (this.q1 != 0) {
-            this.q1.show();
-            this.q2.show();
-            this.q3.show();
-            this.q4.show();
+            if (this.q1 != 0) {
+                this.q1.show();
+                this.q2.show();
+                this.q3.show();
+                this.q4.show();
+            }
         }
     }
 }

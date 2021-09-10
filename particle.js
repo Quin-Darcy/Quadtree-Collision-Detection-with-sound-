@@ -4,8 +4,6 @@ class Particle {
         this.y = y;
         this.r = r;
         this.id = id;
-
-        this.osc = new p5.Oscillator('sine');
         
         this.v_x = 0;
         this.v_y = 0;
@@ -17,12 +15,18 @@ class Particle {
         this.y_coeff = 0;
 
         this.contact = false;
+        this.osc = new p5.Oscillator('sine');
+        this.freq = notes[Math.floor((this.id / N) * notes.length)];
+        this.amp = 0;
+        this.decay = 0;
+        this.osc.freq(this.freq);
+        this.env = new p5.Envelope(A, S, DC, RL);
     }
     coll(parr) {
         let dx = parr.x - this.x;
         let dy = parr.y - this.y;
         let center_dist = dist(dx, dy, 0, 0);
-        let touching_dist = parr.r + this.r;
+        let touching_dist = this.r;
         if (center_dist < touching_dist) {
             let theta = atan2(dy, dx);
             let new_x = this.x + cos(theta) * touching_dist;
@@ -33,33 +37,33 @@ class Particle {
             this.v_y -= a_y * this.hardness;
             parr.v_x += a_x * this.hardness;
             parr.v_y += a_y * this.hardness; 
-        }
+        } 
     }
     sound() {
         let d = 10*Math.sqrt(Math.pow(this.v_x, 2)+Math.pow(this.v_y, 2));
-        let f = map(d, 0, 100, 500, 2000);
-        let a = map(d, 0, 100, 0, 0.8);
-        this.osc.freq(f);
-        this.osc.amp(a);
-        if (C === 1) {
+        this.amp = map(d, 0, 100, 0, 1/N);
+        this.decay = map(d, 0, 100, 0.0, 1+2/N);
+        this.env.set(A, this.amp, this.decay, 0.0);
+        if (SOUND === 1) {
             this.osc.start();
+            this.env.play(this.osc);
         }
-    }
-    no_sound() {
-        this.osc.stop()
     }
     show() {
         if (this.contact) {
-            stroke(252, 3, 236);
-            strokeWeight(2);
-            noFill();
             let d = 10*Math.sqrt(Math.pow(this.v_x, 2)+Math.pow(this.v_y, 2));
-            circle(this.x, this.y, d);
+            if (COLLISION_CIRCLE === 1) {
+                let color = map(d, 0, 100, 0, 1);
+                let scale = map(d, 0, 100, 1.5, 4.5);
+                colorMode(HSB, 100, 1, 1);
+                strokeWeight(1.5);
+                noFill();
+                stroke(d, 1, 1);
+                circle(this.x, this.y, scale*this.r);
+            }
             noStroke();
-            
             this.contact = false;
         } else {
-            this.osc.stop();
             noStroke();
             fill(255);
         }
